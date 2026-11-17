@@ -1,7 +1,7 @@
 #pragma once
 #include <ThreeWire.h>
 #include <RtcDS1302.h>
-#include "IComponent.h"
+#include "../core/IComponent.h"
 
 class RtcClock : public IComponent {
 public:

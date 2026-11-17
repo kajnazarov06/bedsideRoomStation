@@ -1,6 +1,6 @@
 #pragma once
 #include <LiquidCrystal_I2C.h>
-#include "ITextDisplay.h"
+#include "../core/ITextDisplay.h"
 
 class LcdDisplay : public ITextDisplay {
 public:

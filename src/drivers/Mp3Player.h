@@ -1,7 +1,7 @@
 #pragma once
 #include <HardwareSerial.h>
 #include <DFRobotDFPlayerMini.h>
-#include "IComponent.h"
+#include "../core/IComponent.h"
 
 class Mp3Player : public IComponent {
 public:

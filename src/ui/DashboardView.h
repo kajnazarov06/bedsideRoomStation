@@ -1,7 +1,7 @@
 #pragma once
-#include "ITextDisplay.h"
-#include "RtcClock.h"
-#include "DhtSensor.h"
+#include "../core/ITextDisplay.h"
+#include "../drivers/RtcClock.h"
+#include "../drivers/DhtSensor.h"
 
 // Formats clock + climate data for a 2-line display.
 // Knows *what* to show; the display decides *how* to draw it.

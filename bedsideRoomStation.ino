@@ -1,10 +1,10 @@
-#include "Pins.h"
-#include "LcdDisplay.h"
-#include "DhtSensor.h"
-#include "RtcClock.h"
-#include "Buzzer.h"
-#include "Mp3Player.h"
-#include "DashboardView.h"
+#include "src/config/Pins.h"
+#include "src/drivers/LcdDisplay.h"
+#include "src/drivers/DhtSensor.h"
+#include "src/drivers/RtcClock.h"
+#include "src/drivers/Buzzer.h"
+#include "src/drivers/Mp3Player.h"
+#include "src/ui/DashboardView.h"
 
 constexpr unsigned long REFRESH_INTERVAL_MS = 2000;  // DHT11 needs >= 1 s between reads
 constexpr unsigned long MESSAGE_TIME_MS     = 1500;

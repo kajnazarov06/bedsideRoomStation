@@ -1,6 +1,6 @@
 #pragma once
 #include <DHT.h>
-#include "IComponent.h"
+#include "../core/IComponent.h"
 
 struct ClimateReading {
   float temperatureC;

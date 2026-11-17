@@ -1,5 +1,5 @@
 #pragma once
-#include "IComponent.h"
+#include "../core/IComponent.h"
 
 struct Note {
   uint16_t frequencyHz;
