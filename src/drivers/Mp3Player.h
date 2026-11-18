@@ -12,6 +12,8 @@ public:
 
   void setVolume(uint8_t volume);  // 0..30
   void play(uint16_t track);
+  void loop(uint16_t track);       // repeat a track until stop()
+  void stop();
 
 private:
   HardwareSerial& _serial;

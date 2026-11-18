@@ -16,3 +16,11 @@ void Mp3Player::setVolume(uint8_t volume) {
 void Mp3Player::play(uint16_t track) {
   _player.play(track);
 }
+
+void Mp3Player::loop(uint16_t track) {
+  _player.loop(track);
+}
+
+void Mp3Player::stop() {
+  _player.stop();
+}

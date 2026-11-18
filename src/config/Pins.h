@@ -21,4 +21,7 @@ namespace Pins {
 
   // Buzzer
   constexpr uint8_t BUZZER        = 33;
+
+  // Push button to GND (internal pull-up): alarm show / set
+  constexpr uint8_t BUTTON_SET    = 18;
 }
