@@ -36,12 +36,36 @@ void initComponents() {
   showMessage("Starting...", "");
 
   for (IComponent* c : components) {
-    if (!c->begin()) showMessage(c->name(), "FAILED");
+    bool ok = c->begin();
+    Serial.printf("[INIT] %-8s %s\n", c->name(), ok ? "OK" : "FAILED");
+    if (!ok) showMessage(c->name(), "FAILED");
+  }
+}
+
+// Test commands typed in the Serial Monitor:
+//   p = play track 1   r = ring alarm now   s = stop   i = DFPlayer info   t = RTC time
+void handleSerialCommand() {
+  if (!Serial.available()) return;
+  switch (Serial.read()) {
+    case 'p': mp3.setVolume(20); mp3.play(1); break;
+    case 'r': alarmController.ringNow();      break;
+    case 's': mp3.stop();                     break;
+    case 'i': mp3.printInfo();                break;
+    case 't': {
+      RtcDateTime t = rtc.now();
+      Serial.printf("[RTC] %04u-%02u-%02u %02u:%02u:%02u%s\n", t.Year(), t.Month(), t.Day(),
+                    t.Hour(), t.Minute(), t.Second(), t.IsValid() ? "" : " (invalid)");
+      break;
+    }
   }
 }
 
 
 void setup() {
+  Serial.begin(115200);
+  delay(200);
+  Serial.println("\n=== Bedside Room Station ===");
+  Serial.println("Commands: p=play, r=ring now, s=stop, i=mp3 info, t=time");
   initComponents();
   alarmController.begin();
   lcd.clear();
@@ -51,6 +75,8 @@ void loop() {
   // Button and alarm are serviced on every pass so presses are never missed.
   alarmController.handle(setButton.poll());
   alarmController.update();
+  mp3.poll();
+  handleSerialCommand();
 
   static unsigned long lastRefresh = 0;
   static bool needRefresh = true;

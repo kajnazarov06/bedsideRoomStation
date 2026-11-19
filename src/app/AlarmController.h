@@ -22,6 +22,7 @@ public:
   void begin();                    // load saved settings
   void handle(ButtonEvent event);  // feed button events
   void update();                   // call every loop()
+  void ringNow();                  // start ringing immediately (for testing)
 
   // True while the alarm screens own the display (dashboard must not draw).
   bool ownsDisplay() const { return _mode != Mode::Idle; }

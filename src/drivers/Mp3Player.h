@@ -15,9 +15,15 @@ public:
   void loop(uint16_t track);       // repeat a track until stop()
   void stop();
 
+  void poll();       // call every loop(): logs messages sent by the DFPlayer
+  void printInfo();  // logs state, volume and number of files on the SD card
+
 private:
+  void logMessage(uint8_t type, int value);
+
   HardwareSerial& _serial;
   uint8_t _rxPin;
   uint8_t _txPin;
+  bool    _online = false;
   DFRobotDFPlayerMini _player;
 };

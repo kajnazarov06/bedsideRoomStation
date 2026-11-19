@@ -18,12 +18,20 @@ AlarmController::AlarmController(ITextDisplay& display, RtcClock& clock,
 
 void AlarmController::begin() {
   _settings = _store.load();
+  Serial.printf("[ALARM] loaded %02u:%02u %s\n",
+                _settings.hour, _settings.minute, _settings.enabled ? "ON" : "OFF");
+}
+
+void AlarmController::ringNow() {
+  Serial.println("[ALARM] ring now (test)");
+  startRinging();
 }
 
 // ---------------------------------------------------------------- input
 
 void AlarmController::handle(ButtonEvent event) {
   if (event == ButtonEvent::None) return;
+  Serial.printf("[BUTTON] %s\n", event == ButtonEvent::Press ? "press" : "hold");
 
   switch (_mode) {
     case Mode::Idle:
@@ -67,6 +75,7 @@ void AlarmController::startEditing() {
   _mode = Mode::Editing;
   _field = Field::Hour;
   _draft = _settings;
+  Serial.println("[ALARM] editing: hour");
   _modeSince = _lastInput = millis();
   _blinkHidden = false;
   _dirty = true;
@@ -74,11 +83,13 @@ void AlarmController::startEditing() {
 
 void AlarmController::nextField() {
   switch (_field) {
-    case Field::Hour:   _field = Field::Minute; break;
-    case Field::Minute: _field = Field::Status; break;
+    case Field::Hour:   _field = Field::Minute; Serial.println("[ALARM] editing: minute"); break;
+    case Field::Minute: _field = Field::Status; Serial.println("[ALARM] editing: ON/OFF"); break;
     case Field::Status:
       _settings = _draft;
       _store.save(_settings);
+      Serial.printf("[ALARM] saved %02u:%02u %s\n",
+                    _settings.hour, _settings.minute, _settings.enabled ? "ON" : "OFF");
       _lastTriggerMinute = UINT32_MAX;  // allow the new time to ring today
       startShowing("Saved!");
       return;
@@ -94,12 +105,15 @@ void AlarmController::incrementField() {
     case Field::Minute: _draft.minute = (_draft.minute + 1) % 60; break;
     case Field::Status: _draft.enabled = !_draft.enabled;         break;
   }
+  Serial.printf("[ALARM] draft %02u:%02u %s\n",
+                _draft.hour, _draft.minute, _draft.enabled ? "ON" : "OFF");
   _modeSince = millis();
   _blinkHidden = false;
   _dirty = true;
 }
 
 void AlarmController::startRinging() {
+  Serial.println("[ALARM] RINGING");
   _mode = Mode::Ringing;
   _modeSince = millis();
   _player.setVolume(ALARM_VOLUME);
@@ -108,6 +122,7 @@ void AlarmController::startRinging() {
 }
 
 void AlarmController::stopRinging() {
+  Serial.println("[ALARM] stopped");
   _player.stop();
   _mode = Mode::Idle;
 }
@@ -132,6 +147,7 @@ void AlarmController::update() {
 
     case Mode::Editing: {
       if (now - _lastInput >= EDIT_TIMEOUT_MS) {
+        Serial.println("[ALARM] editing timed out, not saved");
         startShowing("Not saved");
         break;
       }
@@ -144,7 +160,10 @@ void AlarmController::update() {
     }
 
     case Mode::Ringing:
-      if (now - _modeSince >= RING_MAX_MS) stopRinging();
+      if (now - _modeSince >= RING_MAX_MS) {
+        Serial.println("[ALARM] auto-stop after 10 min");
+        stopRinging();
+      }
       break;
   }
 
@@ -155,12 +174,16 @@ void AlarmController::checkAlarm() {
   if (!_settings.enabled || _mode == Mode::Ringing) return;
 
   RtcDateTime t = _clock.now();
-  if (!t.IsValid()) return;
+  if (!t.IsValid()) {
+    Serial.println("[ALARM] RTC time invalid, cannot check alarm");
+    return;
+  }
   if (t.Hour() != _settings.hour || t.Minute() != _settings.minute) return;
 
   const uint32_t minuteKey = t.TotalSeconds() / 60;
   if (minuteKey == _lastTriggerMinute) return;  // already rang this minute
   _lastTriggerMinute = minuteKey;
+  Serial.printf("[ALARM] time reached %02u:%02u\n", t.Hour(), t.Minute());
 
   startRinging();
 }
