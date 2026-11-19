@@ -1,4 +1,5 @@
 #include "src/config/Pins.h"
+#include "src/config/Settings.h"
 #include "src/drivers/LcdDisplay.h"
 #include "src/drivers/DhtSensor.h"
 #include "src/drivers/RtcClock.h"
@@ -8,9 +9,6 @@
 #include "src/storage/AlarmStore.h"
 #include "src/ui/DashboardView.h"
 #include "src/app/AlarmController.h"
-
-constexpr unsigned long REFRESH_INTERVAL_MS = 2000;  // DHT11 needs >= 1 s between reads
-constexpr unsigned long MESSAGE_TIME_MS     = 1500;
 
 LcdDisplay lcd(Pins::LCD_SDA, Pins::LCD_SCL, 0x27);  // change to 0x3F if the screen stays blank
 DhtSensor  dht(Pins::DHT_DATA);
@@ -28,7 +26,7 @@ IComponent* components[] = { &dht, &rtc, &buzzer, &mp3, &setButton, &alarmStore 
 void showMessage(const char* top, const char* bottom) {
   lcd.printLine(0, top);
   lcd.printLine(1, bottom);
-  delay(MESSAGE_TIME_MS);
+  delay(Settings::MESSAGE_TIME_MS);
 }
 
 void initComponents() {
@@ -47,7 +45,7 @@ void initComponents() {
 void handleSerialCommand() {
   if (!Serial.available()) return;
   switch (Serial.read()) {
-    case 'p': mp3.setVolume(20); mp3.play(1); break;
+    case 'p': mp3.setVolume(Settings::ALARM_VOLUME); mp3.play(Settings::ALARM_TRACK); break;
     case 'r': alarmController.ringNow();      break;
     case 's': mp3.stop();                     break;
     case 'i': mp3.printInfo();                break;
@@ -86,7 +84,7 @@ void loop() {
     return;
   }
 
-  if (needRefresh || millis() - lastRefresh >= REFRESH_INTERVAL_MS) {
+  if (needRefresh || millis() - lastRefresh >= Settings::REFRESH_INTERVAL_MS) {
     needRefresh = false;
     lastRefresh = millis();
     dashboard.render();

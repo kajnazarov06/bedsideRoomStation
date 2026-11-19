@@ -1,13 +1,11 @@
 #include "AlarmController.h"
+#include "../config/Settings.h"
 
 namespace {
   constexpr unsigned long SHOW_TIME_MS      = 4000;               // info screen
   constexpr unsigned long EDIT_TIMEOUT_MS   = 20000;              // cancel editing
   constexpr unsigned long BLINK_MS          = 400;                // edited value blink
-  constexpr unsigned long RING_MAX_MS       = 10UL * 60 * 1000;   // auto-stop
   constexpr unsigned long CLOCK_CHECK_MS    = 500;                // RTC polling
-  constexpr uint16_t      ALARM_TRACK       = 1;                  // 0001.mp3
-  constexpr uint8_t       ALARM_VOLUME      = 20;                 // 0..30
 }
 
 AlarmController::AlarmController(ITextDisplay& display, RtcClock& clock,
@@ -116,8 +114,8 @@ void AlarmController::startRinging() {
   Serial.println("[ALARM] RINGING");
   _mode = Mode::Ringing;
   _modeSince = millis();
-  _player.setVolume(ALARM_VOLUME);
-  _player.loop(ALARM_TRACK);
+  _player.setVolume(Settings::ALARM_VOLUME);
+  _player.loop(Settings::ALARM_TRACK);
   _dirty = true;
 }
 
@@ -160,7 +158,7 @@ void AlarmController::update() {
     }
 
     case Mode::Ringing:
-      if (now - _modeSince >= RING_MAX_MS) {
+      if (now - _modeSince >= Settings::RING_MAX_MS) {
         Serial.println("[ALARM] auto-stop after 10 min");
         stopRinging();
       }
