@@ -1,5 +1,10 @@
 #include "src/config/Pins.h"
 #include "src/config/Settings.h"
+#include "src/config/Secrets.h"
+#include "src/net/WifiConnection.h"
+#include "src/net/DeviceAuth.h"
+#include "src/net/ApiServer.h"
+#include "src/net/Discovery.h"
 #include "src/drivers/LcdDisplay.h"
 #include "src/drivers/DhtSensor.h"
 #include "src/drivers/RtcClock.h"
@@ -17,11 +22,17 @@ Buzzer     buzzer(Pins::BUZZER);
 Mp3Player  mp3(Serial2, Pins::DFPLAYER_RX, Pins::DFPLAYER_TX);
 Button     setButton(Pins::BUTTON_SET);  // hold time: 1.5 s
 AlarmStore alarmStore;
+WifiConnection wifi(Secrets::WIFI_SSID, Secrets::WIFI_PASSWORD);
 
 DashboardView   dashboard(lcd, rtc, dht);
 AlarmController alarmController(lcd, rtc, mp3, buzzer, alarmStore);
 
-IComponent* components[] = { &dht, &rtc, &buzzer, &mp3, &setButton, &alarmStore };
+DeviceAuth deviceAuth;
+ApiServer  api(deviceAuth, rtc, dht, alarmController, Settings::API_PORT);
+Discovery  discovery(Settings::API_PORT);
+
+IComponent* components[] = { &dht, &rtc, &buzzer, &mp3, &setButton, &alarmStore, &deviceAuth };
+IComponent* netComponents[] = { &api, &discovery };  // started after WiFi
 
 void showMessage(const char* top, const char* bottom) {
   lcd.printLine(0, top);
@@ -37,6 +48,20 @@ void initComponents() {
     bool ok = c->begin();
     Serial.printf("[INIT] %-8s %s\n", c->name(), ok ? "OK" : "FAILED");
     if (!ok) showMessage(c->name(), "FAILED");
+  }
+}
+
+void initWifi() {
+  showMessage("Connecting WiFi", Secrets::WIFI_SSID);
+  bool ok = wifi.begin();
+  Serial.printf("[INIT] %-8s %s\n", wifi.name(), ok ? "OK" : "FAILED");
+  if (ok) showMessage(Secrets::WIFI_SSID, wifi.localIP().toString().c_str());
+  else    showMessage("WiFi", "FAILED");
+
+  // Started even if WiFi failed: auto-reconnect brings the network up later.
+  for (IComponent* c : netComponents) {
+    bool started = c->begin();
+    Serial.printf("[INIT] %-8s %s\n", c->name(), started ? "OK" : "FAILED");
   }
 }
 
@@ -65,6 +90,7 @@ void setup() {
   Serial.println("\n=== Bedside Room Station ===");
   Serial.println("Commands: p=play, r=ring now, s=stop, i=mp3 info, t=time");
   initComponents();
+  initWifi();
   alarmController.begin();
   lcd.clear();
 }
@@ -74,6 +100,7 @@ void loop() {
   alarmController.handle(setButton.poll());
   alarmController.update();
   mp3.poll();
+  api.poll();
   handleSerialCommand();
 
   static unsigned long lastRefresh = 0;

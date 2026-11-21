@@ -27,6 +27,8 @@ public:
   // True while the alarm screens own the display (dashboard must not draw).
   bool ownsDisplay() const { return _mode != Mode::Idle; }
 
+  const AlarmSettings& settings() const { return _settings; }
+
 private:
   enum class Mode  : uint8_t { Idle, Showing, Editing, Ringing };
   enum class Field : uint8_t { Hour, Minute, Status };

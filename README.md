@@ -122,6 +122,7 @@ On the UNO, everything is powered from 5V.
 | DHT sensor library | Adafruit (also install *Adafruit Unified Sensor* when asked) |
 | DFRobotDFPlayerMini | DFRobot |
 | Adafruit NeoPixel | Adafruit |
+| ArduinoJson (7.x) | Benoit Blanchon |
 
 ### 2. microSD card
 

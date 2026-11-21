@@ -16,7 +16,6 @@ bool Mp3Player::begin() {
   }
 
   Serial.println("[MP3] DFPlayer online");
-  printInfo();
   return true;
 }
 
