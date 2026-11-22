@@ -128,12 +128,14 @@ void AlarmController::stopRinging() {
 // ---------------------------------------------------------------- update
 
 void AlarmController::update() {
-  const unsigned long now = millis();
-
-  if (now - _lastClockRead >= CLOCK_CHECK_MS) {
-    _lastClockRead = now;
+  if (millis() - _lastClockRead >= CLOCK_CHECK_MS) {
+    _lastClockRead = millis();
     checkAlarm();
   }
+
+  // Read after checkAlarm(): it may start ringing and set _modeSince, which
+  // must not be later than `now` or the unsigned subtraction below wraps.
+  const unsigned long now = millis();
 
   switch (_mode) {
     case Mode::Idle:
