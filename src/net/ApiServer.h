@@ -14,6 +14,8 @@
 //   POST /api/pair/confirm  public   {"code":"123456"} -> {"token":"..."}
 //   POST /api/unpair        token    forget the paired client
 //   GET  /api/state         token    time, climate, WiFi, next alarm
+//   GET  /api/alarms        token    {"alarms":[{id, time:"07:00", days:[1..7], enabled, label}]}
+//                                    days are ISO weekdays: 1 = Monday ... 7 = Sunday
 //
 // Call poll() from every loop() pass.
 class ApiServer : public IComponent {
@@ -32,6 +34,7 @@ private:
   void handlePairConfirm();
   void handleUnpair();
   void handleState();
+  void handleAlarms();
   void handleNotFound();
 
   bool requireAuth();                       // sends 401 and returns false if not authorised

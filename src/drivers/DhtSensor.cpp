@@ -8,9 +8,9 @@ bool DhtSensor::begin() {
 }
 
 ClimateReading DhtSensor::read() {
-  ClimateReading r;
-  r.humidity     = _dht.readHumidity();
-  r.temperatureC = _dht.readTemperature();
-  r.valid        = !isnan(r.humidity) && !isnan(r.temperatureC);
-  return r;
+  ClimateReading reading;
+  reading.humidity     = _dht.readHumidity();
+  reading.temperatureC = _dht.readTemperature();
+  reading.valid        = !isnan(reading.humidity) && !isnan(reading.temperatureC);
+  return reading;
 }

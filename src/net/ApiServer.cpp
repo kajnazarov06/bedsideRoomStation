@@ -7,14 +7,14 @@ namespace {
   constexpr int API_VERSION = 1;
 
   // RTC time is local wall time, so no "Z" suffix.
-  void formatIso(const RtcDateTime& t, char* out, size_t len) {
+  void formatIso(const RtcDateTime& dateTime, char* out, size_t len) {
     snprintf(out, len, "%04u-%02u-%02uT%02u:%02u:%02u",
-             t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second());
+             dateTime.Year(), dateTime.Month(), dateTime.Day(), dateTime.Hour(), dateTime.Minute(), dateTime.Second());
   }
 
   // Next time the alarm will ring: today if still ahead, otherwise tomorrow.
-  RtcDateTime nextAlarm(const RtcDateTime& now, const AlarmSettings& a) {
-    RtcDateTime today(now.Year(), now.Month(), now.Day(), a.hour, a.minute, 0);
+  RtcDateTime nextAlarm(const RtcDateTime& now, const AlarmSettings& settings) {
+    RtcDateTime today(now.Year(), now.Month(), now.Day(), settings.hour, settings.minute, 0);
     return today > now ? today : today + (uint32_t)(24UL * 60 * 60);
   }
 }
@@ -34,6 +34,7 @@ bool ApiServer::begin() {
   _server.on("/api/pair/confirm", HTTP_POST, [this] { handlePairConfirm(); });
   _server.on("/api/unpair",       HTTP_POST, [this] { handleUnpair(); });
   _server.on("/api/state",        HTTP_GET,  [this] { handleState(); });
+  _server.on("/api/alarms",       HTTP_GET,  [this] { handleAlarms(); });
   _server.onNotFound([this] { handleNotFound(); });
 
   _server.begin();
@@ -56,10 +57,10 @@ void ApiServer::reply(int code, JsonDocument& doc) {
 }
 
 void ApiServer::replyLocked() {
-  JsonDocument d;
-  d["error"] = "locked";
-  d["retry_after"] = _auth.retryAfterS();
-  reply(429, d);
+  JsonDocument response;
+  response["error"] = "locked";
+  response["retry_after"] = _auth.retryAfterS();
+  reply(429, response);
 }
 
 bool ApiServer::requireAuth() {
@@ -67,55 +68,55 @@ bool ApiServer::requireAuth() {
   const char* prefix = "Bearer ";
   if (header.startsWith(prefix) && _auth.verifyToken(header.substring(strlen(prefix)))) return true;
 
-  JsonDocument d;
-  d["error"] = "unauthorized";
-  reply(401, d);
+  JsonDocument response;
+  response["error"] = "unauthorized";
+  reply(401, response);
   return false;
 }
 
 // ---------------------------------------------------------------- routes
 
 void ApiServer::handleInfo() {
-  JsonDocument d;
-  d["id"]     = _deviceId;
-  d["type"]   = Settings::DEVICE_TYPE;
-  d["name"]   = Settings::DEVICE_NAME;
-  d["fw"]     = Settings::FIRMWARE_VERSION;
-  d["mac"]    = WiFi.macAddress();
-  d["paired"] = _auth.isPaired();
-  JsonArray caps = d["capabilities"].to<JsonArray>();
-  caps.add("clock");
-  caps.add("temperature");
-  caps.add("humidity");
-  caps.add("alarm");
-  reply(200, d);
+  JsonDocument response;
+  response["id"]     = _deviceId;
+  response["type"]   = Settings::DEVICE_TYPE;
+  response["name"]   = Settings::DEVICE_NAME;
+  response["fw"]     = Settings::FIRMWARE_VERSION;
+  response["mac"]    = WiFi.macAddress();
+  response["paired"] = _auth.isPaired();
+  JsonArray capabilities = response["capabilities"].to<JsonArray>();
+  capabilities.add("clock");
+  capabilities.add("temperature");
+  capabilities.add("humidity");
+  capabilities.add("alarm");
+  reply(200, response);
 }
 
 void ApiServer::handlePairStart() {
   if (!_auth.startPairing()) return replyLocked();
 
-  JsonDocument d;
-  d["expires_in"] = 120;
-  reply(200, d);
+  JsonDocument response;
+  response["expires_in"] = 120;
+  reply(200, response);
 }
 
 void ApiServer::handlePairConfirm() {
-  JsonDocument in;
-  deserializeJson(in, _server.arg("plain"));  // bad JSON -> empty code -> wrong code
-  const char* code = in["code"] | "";
+  JsonDocument request;
+  deserializeJson(request, _server.arg("plain"));  // bad JSON -> empty code -> wrong code
+  const char* code = request["code"] | "";
 
   String token;
   switch (_auth.confirmPairing(code, token)) {
     case DeviceAuth::PairResult::Ok: {
-      JsonDocument d;
-      d["token"] = token;
-      return reply(200, d);
+      JsonDocument response;
+      response["token"] = token;
+      return reply(200, response);
     }
     case DeviceAuth::PairResult::WrongCode: {
-      JsonDocument d;
-      d["error"] = "wrong code";
-      d["attempts_left"] = _auth.attemptsLeft();
-      return reply(401, d);
+      JsonDocument response;
+      response["error"] = "wrong code";
+      response["attempts_left"] = _auth.attemptsLeft();
+      return reply(401, response);
     }
     case DeviceAuth::PairResult::LockedOut:
       return replyLocked();
@@ -126,51 +127,71 @@ void ApiServer::handleUnpair() {
   if (!requireAuth()) return;
   _auth.unpair();
 
-  JsonDocument d;
-  d["ok"] = true;
-  reply(200, d);
+  JsonDocument response;
+  response["ok"] = true;
+  reply(200, response);
 }
 
 void ApiServer::handleState() {
   if (!requireAuth()) return;
 
-  JsonDocument d;
+  JsonDocument response;
   RtcDateTime now = _clock.now();
-  char ts[20];
+  char timestamp[20];
   if (now.IsValid()) {
-    formatIso(now, ts, sizeof(ts));
-    d["time"] = ts;
+    formatIso(now, timestamp, sizeof(timestamp));
+    response["time"] = timestamp;
   } else {
-    d["time"] = nullptr;
+    response["time"] = nullptr;
   }
-  d["tz"] = Settings::TIME_ZONE;
+  response["tz"] = Settings::TIME_ZONE;
 
-  ClimateReading r = _climate.read();  // the DHT library caches reads for 2 s
-  if (r.valid) {
-    d["temperature_c"] = r.temperatureC;
-    d["humidity_pct"]  = r.humidity;
+  ClimateReading reading = _climate.read();  // the DHT library caches reads for 2 s
+  if (reading.valid) {
+    response["temperature_c"] = reading.temperatureC;
+    response["humidity_pct"]  = reading.humidity;
   } else {
-    d["temperature_c"] = nullptr;
-    d["humidity_pct"]  = nullptr;
+    response["temperature_c"] = nullptr;
+    response["humidity_pct"]  = nullptr;
   }
 
-  d["wifi_rssi"] = WiFi.RSSI();
-  d["uptime_s"]  = millis() / 1000;
+  response["wifi_rssi"] = WiFi.RSSI();
+  response["uptime_s"]  = millis() / 1000;
 
   const AlarmSettings& alarm = _alarm.settings();
   if (alarm.enabled && now.IsValid()) {
     char next[20];
     formatIso(nextAlarm(now, alarm), next, sizeof(next));
-    d["next_alarm"] = next;
+    response["next_alarm"] = next;
   } else {
-    d["next_alarm"] = nullptr;
+    response["next_alarm"] = nullptr;
   }
 
-  reply(200, d);
+  reply(200, response);
+}
+
+// The firmware has a single alarm that rings every day, so the list has one entry.
+void ApiServer::handleAlarms() {
+  if (!requireAuth()) return;
+
+  const AlarmSettings& settings = _alarm.settings();
+  char timeText[6];
+  snprintf(timeText, sizeof(timeText), "%02u:%02u", settings.hour, settings.minute);
+
+  JsonDocument response;
+  JsonObject alarm = response["alarms"].to<JsonArray>().add<JsonObject>();
+  alarm["id"]      = 1;
+  alarm["time"]    = timeText;
+  JsonArray days   = alarm["days"].to<JsonArray>();
+  for (int day = 1; day <= 7; day++) days.add(day);
+  alarm["enabled"] = settings.enabled;
+  alarm["label"]   = "Alarm";
+
+  reply(200, response);
 }
 
 void ApiServer::handleNotFound() {
-  JsonDocument d;
-  d["error"] = "not found";
-  reply(404, d);
+  JsonDocument response;
+  response["error"] = "not found";
+  reply(404, response);
 }

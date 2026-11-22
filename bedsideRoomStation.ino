@@ -44,10 +44,10 @@ void initComponents() {
   lcd.begin();
   showMessage("Starting...", "");
 
-  for (IComponent* c : components) {
-    bool ok = c->begin();
-    Serial.printf("[INIT] %-8s %s\n", c->name(), ok ? "OK" : "FAILED");
-    if (!ok) showMessage(c->name(), "FAILED");
+  for (IComponent* component : components) {
+    bool ok = component->begin();
+    Serial.printf("[INIT] %-8s %s\n", component->name(), ok ? "OK" : "FAILED");
+    if (!ok) showMessage(component->name(), "FAILED");
   }
 }
 
@@ -59,9 +59,9 @@ void initWifi() {
   else    showMessage("WiFi", "FAILED");
 
   // Started even if WiFi failed: auto-reconnect brings the network up later.
-  for (IComponent* c : netComponents) {
-    bool started = c->begin();
-    Serial.printf("[INIT] %-8s %s\n", c->name(), started ? "OK" : "FAILED");
+  for (IComponent* component : netComponents) {
+    bool started = component->begin();
+    Serial.printf("[INIT] %-8s %s\n", component->name(), started ? "OK" : "FAILED");
   }
 }
 
@@ -75,9 +75,9 @@ void handleSerialCommand() {
     case 's': mp3.stop();                     break;
     case 'i': mp3.printInfo();                break;
     case 't': {
-      RtcDateTime t = rtc.now();
-      Serial.printf("[RTC] %04u-%02u-%02u %02u:%02u:%02u%s\n", t.Year(), t.Month(), t.Day(),
-                    t.Hour(), t.Minute(), t.Second(), t.IsValid() ? "" : " (invalid)");
+      RtcDateTime dateTime = rtc.now();
+      Serial.printf("[RTC] %04u-%02u-%02u %02u:%02u:%02u%s\n", dateTime.Year(), dateTime.Month(), dateTime.Day(),
+                    dateTime.Hour(), dateTime.Minute(), dateTime.Second(), dateTime.IsValid() ? "" : " (invalid)");
       break;
     }
   }

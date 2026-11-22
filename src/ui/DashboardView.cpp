@@ -12,26 +12,26 @@ void DashboardView::render() {
 
 // Row example: "2026-11-12 23:05"
 void DashboardView::renderTime(uint8_t row) {
-  RtcDateTime t = _clock.now();
+  RtcDateTime dateTime = _clock.now();
   char line[17];
-  if (!t.IsValid()) {
+  if (!dateTime.IsValid()) {
     snprintf(line, sizeof(line), "RTC error");
   } else {
     snprintf(line, sizeof(line), "%04u-%02u-%02u %02u:%02u",
-             t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute());
+             dateTime.Year(), dateTime.Month(), dateTime.Day(), dateTime.Hour(), dateTime.Minute());
   }
   _display.printLine(row, line);
 }
 
 // Row example: "T:23.0°C H:45%"
 void DashboardView::renderClimate(uint8_t row) {
-  ClimateReading r = _climate.read();
+  ClimateReading reading = _climate.read();
   char line[17];
-  if (!r.valid) {
+  if (!reading.valid) {
     snprintf(line, sizeof(line), "DHT11 error");
   } else {
     snprintf(line, sizeof(line), "T:%.1f%cC H:%.0f%%",
-             r.temperatureC, LCD_DEGREE, r.humidity);
+             reading.temperatureC, LCD_DEGREE, reading.humidity);
   }
   _display.printLine(row, line);
 }

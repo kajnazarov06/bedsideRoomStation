@@ -35,3 +35,10 @@ Then confirm the new files appear in it, e.g.
   anonymous namespace next to the code that uses them.
 - Secrets live in `src/config/Secrets.h` (gitignored); keep `Secrets.example.h` in sync.
 - When adding a library dependency, also add it to the library table in `README.md`.
+
+## Naming
+
+- Name variables and parameters with whole words that say what they hold:
+  `response`, `reading`, `settings`, `dateTime`, `component` — never `d`, `r`, `a`,
+  `t`, `c`, and no cryptic abbreviations like `ts` or `caps`.
+- Only exception: `i` / `j` as plain loop counters.

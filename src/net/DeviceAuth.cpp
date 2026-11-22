@@ -20,10 +20,10 @@ namespace {
   }
 
   // Compare without an early exit so timing doesn't leak the matching prefix.
-  bool constantTimeEquals(const String& a, const String& b) {
-    if (a.length() != b.length()) return false;
+  bool constantTimeEquals(const String& first, const String& second) {
+    if (first.length() != second.length()) return false;
     uint8_t diff = 0;
-    for (size_t i = 0; i < a.length(); i++) diff |= a[i] ^ b[i];
+    for (size_t i = 0; i < first.length(); i++) diff |= first[i] ^ second[i];
     return diff == 0;
   }
 }

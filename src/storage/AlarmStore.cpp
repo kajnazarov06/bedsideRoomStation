@@ -5,17 +5,17 @@ bool AlarmStore::begin() {
 }
 
 AlarmSettings AlarmStore::load() {
-  AlarmSettings s;
-  s.hour    = _prefs.getUChar("hour", s.hour);
-  s.minute  = _prefs.getUChar("minute", s.minute);
-  s.enabled = _prefs.getBool("enabled", s.enabled);
-  if (s.hour > 23)   s.hour = 0;
-  if (s.minute > 59) s.minute = 0;
-  return s;
+  AlarmSettings settings;
+  settings.hour    = _prefs.getUChar("hour", settings.hour);
+  settings.minute  = _prefs.getUChar("minute", settings.minute);
+  settings.enabled = _prefs.getBool("enabled", settings.enabled);
+  if (settings.hour > 23)   settings.hour = 0;
+  if (settings.minute > 59) settings.minute = 0;
+  return settings;
 }
 
-void AlarmStore::save(const AlarmSettings& s) {
-  _prefs.putUChar("hour", s.hour);
-  _prefs.putUChar("minute", s.minute);
-  _prefs.putBool("enabled", s.enabled);
+void AlarmStore::save(const AlarmSettings& settings) {
+  _prefs.putUChar("hour", settings.hour);
+  _prefs.putUChar("minute", settings.minute);
+  _prefs.putBool("enabled", settings.enabled);
 }

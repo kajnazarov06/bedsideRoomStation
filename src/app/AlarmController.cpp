@@ -173,17 +173,17 @@ void AlarmController::update() {
 void AlarmController::checkAlarm() {
   if (!_settings.enabled || _mode == Mode::Ringing) return;
 
-  RtcDateTime t = _clock.now();
-  if (!t.IsValid()) {
+  RtcDateTime dateTime = _clock.now();
+  if (!dateTime.IsValid()) {
     Serial.println("[ALARM] RTC time invalid, cannot check alarm");
     return;
   }
-  if (t.Hour() != _settings.hour || t.Minute() != _settings.minute) return;
+  if (dateTime.Hour() != _settings.hour || dateTime.Minute() != _settings.minute) return;
 
-  const uint32_t minuteKey = t.TotalSeconds() / 60;
+  const uint32_t minuteKey = dateTime.TotalSeconds() / 60;
   if (minuteKey == _lastTriggerMinute) return;  // already rang this minute
   _lastTriggerMinute = minuteKey;
-  Serial.printf("[ALARM] time reached %02u:%02u\n", t.Hour(), t.Minute());
+  Serial.printf("[ALARM] time reached %02u:%02u\n", dateTime.Hour(), dateTime.Minute());
 
   startRinging();
 }
@@ -209,9 +209,9 @@ void AlarmController::renderShowing() {
   if (!_settings.enabled) {
     snprintf(bottom, sizeof(bottom), "Status: OFF");
   } else {
-    RtcDateTime t = _clock.now();
-    if (t.IsValid()) {
-      int nowMin   = t.Hour() * 60 + t.Minute();
+    RtcDateTime dateTime = _clock.now();
+    if (dateTime.IsValid()) {
+      int nowMin   = dateTime.Hour() * 60 + dateTime.Minute();
       int alarmMin = _settings.hour * 60 + _settings.minute;
       int diff     = (alarmMin - nowMin + 1440) % 1440;
       if (diff == 0) diff = 1440;
