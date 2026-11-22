@@ -25,6 +25,11 @@ void AlarmController::ringNow() {
   startRinging();
 }
 
+RtcDateTime AlarmController::nextRing(const RtcDateTime& now) const {
+  RtcDateTime today(now.Year(), now.Month(), now.Day(), _settings.hour, _settings.minute, 0);
+  return today > now ? today : today + (uint32_t)(24UL * 60 * 60);
+}
+
 // ---------------------------------------------------------------- input
 
 void AlarmController::handle(ButtonEvent event) {

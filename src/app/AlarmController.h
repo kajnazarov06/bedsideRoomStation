@@ -29,6 +29,9 @@ public:
 
   const AlarmSettings& settings() const { return _settings; }
 
+  // Next time the alarm rings after `now`: today if still ahead, otherwise tomorrow.
+  RtcDateTime nextRing(const RtcDateTime& now) const;
+
 private:
   enum class Mode  : uint8_t { Idle, Showing, Editing, Ringing };
   enum class Field : uint8_t { Hour, Minute, Status };

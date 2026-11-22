@@ -36,6 +36,17 @@ Then confirm the new files appear in it, e.g.
 - Secrets live in `src/config/Secrets.h` (gitignored); keep `Secrets.example.h` in sync.
 - When adding a library dependency, also add it to the library table in `README.md`.
 
+## HTTP API layout (`src/net/api/`, Laravel-style)
+
+- `Routes.cpp` — the only place endpoints are listed (method, path, controller, middleware).
+- `ApiServer` — owns the `WebServer`, router, middleware and controllers; no request logic.
+- `http/` — `Router`, `HttpRequest`, `HttpResponse` (adds `api_version`, logs), `IMiddleware`.
+- `middleware/` — checks that run before a handler (e.g. `RequireToken`).
+- `controllers/` — one class per resource; methods take `(HttpRequest&, HttpResponse&)`.
+- `resources/` — JSON shapes and formatting (`AlarmResource`, `DateTimeFormat`).
+- Business logic stays in `src/app/` (e.g. `AlarmController::nextRing`), not in controllers.
+- New endpoint: controller method → route line in `Routes.cpp` → doc line in its header comment.
+
 ## Naming
 
 - Name variables and parameters with whole words that say what they hold:

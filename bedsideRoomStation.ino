@@ -3,7 +3,7 @@
 #include "src/config/Secrets.h"
 #include "src/net/WifiConnection.h"
 #include "src/net/DeviceAuth.h"
-#include "src/net/ApiServer.h"
+#include "src/net/api/ApiServer.h"
 #include "src/net/Discovery.h"
 #include "src/drivers/LcdDisplay.h"
 #include "src/drivers/DhtSensor.h"
