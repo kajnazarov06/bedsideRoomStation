@@ -1,14 +1,10 @@
 #include "PairingController.h"
 
-namespace {
-  constexpr int CODE_EXPIRES_IN_S = 120;  // matches DeviceAuth's code lifetime
-}
-
 void PairingController::start(HttpRequest&, HttpResponse& response) {
   if (!_auth.startPairing()) return replyLocked(response);
 
   JsonDocument body;
-  body["expires_in"] = CODE_EXPIRES_IN_S;
+  body["expires_in"] = _auth.codeSecondsLeft();
   response.json(200, body);
 }
 

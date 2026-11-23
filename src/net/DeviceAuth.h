@@ -27,12 +27,14 @@ public:
   bool       verifyToken(const String& token) const;
   void       unpair();
 
+  // True while a pairing code is waiting to be confirmed (shown on the LCD).
+  bool        pairingActive() const;
   const char* pairingCode() const { return _code; }
+  uint32_t    codeSecondsLeft() const;  // 0 when no code is active
 
 private:
   static constexpr uint8_t MAX_FAILURES = 5;
 
-  bool pairingActive() const;
   void registerFailure();
 
   Preferences   _prefs;

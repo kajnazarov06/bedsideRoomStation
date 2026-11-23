@@ -3,7 +3,7 @@
 // Every endpoint of the API (api_version 1), in one place.
 //
 //   GET  /api/info          public   device identity and capabilities
-//   POST /api/pair/start    public   show a pairing code (Serial for now)
+//   POST /api/pair/start    public   show a pairing code on the LCD
 //   POST /api/pair/confirm  public   {"code":"123456"} -> {"token":"..."}
 //   POST /api/unpair        token    forget the paired client
 //   GET  /api/state         token    time, climate, WiFi, next alarm

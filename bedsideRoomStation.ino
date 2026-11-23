@@ -13,6 +13,7 @@
 #include "src/drivers/Button.h"
 #include "src/storage/AlarmStore.h"
 #include "src/ui/DashboardView.h"
+#include "src/ui/PairingView.h"
 #include "src/app/AlarmController.h"
 
 LcdDisplay lcd(Pins::LCD_SDA, Pins::LCD_SCL, 0x27);  // change to 0x3F if the screen stays blank
@@ -27,7 +28,8 @@ WifiConnection wifi(Secrets::WIFI_SSID, Secrets::WIFI_PASSWORD);
 DashboardView   dashboard(lcd, rtc, dht);
 AlarmController alarmController(lcd, rtc, mp3, buzzer, alarmStore);
 
-DeviceAuth deviceAuth;
+DeviceAuth  deviceAuth;
+PairingView pairingView(lcd, deviceAuth);
 ApiServer  api(deviceAuth, rtc, dht, alarmController, Settings::API_PORT);
 Discovery  discovery(Settings::API_PORT);
 
@@ -108,6 +110,12 @@ void loop() {
 
   if (alarmController.ownsDisplay()) {
     needRefresh = true;  // redraw the dashboard as soon as the alarm screen closes
+    return;
+  }
+
+  if (pairingView.isActive()) {
+    needRefresh = true;  // back to the dashboard once paired or the code expires
+    pairingView.update();
     return;
   }
 

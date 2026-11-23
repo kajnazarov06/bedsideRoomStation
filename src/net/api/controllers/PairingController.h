@@ -3,7 +3,7 @@
 #include "../http/HttpResponse.h"
 #include "../../DeviceAuth.h"
 
-// POST /api/pair/start    show a pairing code (Serial for now)
+// POST /api/pair/start    show a pairing code on the LCD
 // POST /api/pair/confirm  {"code":"123456"} -> {"token":"..."}
 // POST /api/unpair        forget the paired client (needs the token)
 class PairingController {

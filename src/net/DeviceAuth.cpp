@@ -45,6 +45,11 @@ bool DeviceAuth::pairingActive() const {
   return _code[0] != '\0' && millis() - _codeSince < CODE_VALID_MS;
 }
 
+uint32_t DeviceAuth::codeSecondsLeft() const {
+  if (!pairingActive()) return 0;
+  return (CODE_VALID_MS - (millis() - _codeSince) + 999) / 1000;
+}
+
 bool DeviceAuth::startPairing() {
   if (retryAfterS() > 0) return false;
   _locked = false;
