@@ -14,11 +14,11 @@ It shows the time, date, room temperature and humidity, wakes you with your own 
 
 - **Clock:** time, date and weekday from a battery-backed real-time clock (keeps time without power)
 - **Room climate:** temperature and humidity from a DHT11 sensor
-- **Alarm:** plays an MP3 from a microSD card, with snooze
+- **Alarms:** up to 5 alarms, each with its own weekdays (every day, Mon–Fri, Sat–Sun or any single day); plays an MP3 from a microSD card, with snooze
 - **Sunrise light:** the LED ring slowly brightens 15 minutes before the alarm
 - **Night light:** turns on automatically when the room gets dark; clap to switch it on or off
 - **Room report:** tells you when the room is too dry, too humid or too warm
-- **Settings survive power cuts:** alarm time, volume and on/off are saved in flash memory
+- **Settings survive power cuts:** alarm times, days, volume and on/off are saved in flash memory
 
 ## Hardware
 
@@ -95,7 +95,7 @@ On the UNO, everything is powered from 5V.
 
 | Control | On the clock screen | While setting the alarm | While the alarm rings or snoozes |
 |---|---|---|---|
-| **SET** | Press: show alarm time and volume. Hold: start setting the alarm | Press: next value (hour → minute → volume → on/off), then save | Press: stop the alarm until tomorrow |
+| **SET** | Press: show alarm 1; press again for alarms 2–5. Hold: start setting the alarm on screen | Press: next value (hour → minute → days → volume → on/off), then save | Press: stop the alarm until tomorrow |
 | **SNOOZE** | Press: room report | Press: value − 1 (hold: fast) | Press: snooze 9 minutes. Hold while snoozing: cancel |
 | **LIGHT** | Press: night light on/off. Hold: back to automatic | Press: value + 1 (hold: fast) | Press: stop the alarm |
 | **Knob** | night-light brightness | not used | not used |

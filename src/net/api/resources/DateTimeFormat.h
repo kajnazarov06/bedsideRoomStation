@@ -18,4 +18,18 @@ namespace DateTimeFormat {
     snprintf(text, sizeof(text), "%02u:%02u", hour, minute);
     return String(text);
   }
+
+  // Parses "07:30". False unless it is a valid 24-hour time.
+  inline bool parseHourMinute(const char* text, uint8_t& hour, uint8_t& minute) {
+    unsigned int parsedHour, parsedMinute;
+    char extra;
+    if (text == nullptr ||
+        sscanf(text, "%2u:%2u%c", &parsedHour, &parsedMinute, &extra) != 2 ||
+        parsedHour > 23 || parsedMinute > 59) {
+      return false;
+    }
+    hour   = parsedHour;
+    minute = parsedMinute;
+    return true;
+  }
 }

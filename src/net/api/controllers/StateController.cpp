@@ -23,8 +23,9 @@ void StateController::show(HttpRequest&, HttpResponse& response) {
   body["wifi_rssi"] = WiFi.RSSI();
   body["uptime_s"]  = millis() / 1000;
 
-  if (_alarm.settings().enabled && now.IsValid()) body["next_alarm"] = DateTimeFormat::iso(_alarm.nextRing(now));
-  else                                            body["next_alarm"] = nullptr;
+  RtcDateTime nextAlarm;
+  if (now.IsValid() && _alarm.nextRing(now, nextAlarm)) body["next_alarm"] = DateTimeFormat::iso(nextAlarm);
+  else                                                  body["next_alarm"] = nullptr;
 
   response.json(200, body);
 }

@@ -6,20 +6,26 @@
 #include "../drivers/Buzzer.h"
 #include "../storage/AlarmStore.h"
 
-// One-button alarm logic.
+// One-button logic for Settings::ALARM_COUNT alarms, each with its own weekdays.
 //
-//  Clock screen:  Press -> show alarm time + ON/OFF for a few seconds
-//                 Hold  -> start editing
-//  Editing:       Press -> change the blinking value (+1 / toggle ON-OFF)
-//                 Hold  -> next value: hour -> minute -> status -> save
+//  Clock screen:  Press -> show alarm 1 (time, days, ON/OFF) for a few seconds
+//                 Hold  -> edit alarm 1
+//  Showing:       Press -> show the next alarm (after the last one: back to the clock)
+//                 Hold  -> edit the alarm on screen
+//  Editing:       Press -> change the blinking value
+//                          (+1 / next day choice / toggle ON-OFF)
+//                 Hold  -> next value: hour -> minute -> days -> status -> save
 //                 20 s without a press cancels without saving
 //  Ringing:       Press or hold -> stop the music
+//
+// Day choices: every day, Mon-Fri, Sat-Sun, one single day (Mon ... Sun),
+// plus the alarm's own custom days if they were set through the API.
 class AlarmController {
 public:
   AlarmController(ITextDisplay& display, RtcClock& clock, Mp3Player& player,
                   Buzzer& buzzer, AlarmStore& store);
 
-  void begin();                    // load saved settings
+  void begin();                    // load saved alarms
   void handle(ButtonEvent event);  // feed button events
   void update();                   // call every loop()
   void ringNow();                  // start ringing immediately (for testing)
@@ -27,22 +33,29 @@ public:
   // True while the alarm screens own the display (dashboard must not draw).
   bool ownsDisplay() const { return _mode != Mode::Idle; }
 
-  const AlarmSettings& settings() const { return _settings; }
+  const AlarmList& alarms() const { return _alarms; }
 
-  // Next time the alarm rings after `now`: today if still ahead, otherwise tomorrow.
-  RtcDateTime nextRing(const RtcDateTime& now) const;
+  // Replaces alarm `index` (0-based) and saves it. False if the index is out of range.
+  bool setAlarm(uint8_t index, const AlarmSettings& settings);
+
+  // Earliest time any enabled alarm rings after `now`. False if none will ring.
+  bool nextRing(const RtcDateTime& now, RtcDateTime& next) const;
 
 private:
   enum class Mode  : uint8_t { Idle, Showing, Editing, Ringing };
-  enum class Field : uint8_t { Hour, Minute, Status };
+  enum class Field : uint8_t { Hour, Minute, Days, Status };
 
-  void startShowing(const char* title);
-  void startEditing();
+  static bool nextRingOf(const AlarmSettings& settings, const RtcDateTime& now, RtcDateTime& next);
+
+  void startShowing(uint8_t index, const char* title);
+  void startEditing(uint8_t index);
   void nextField();
   void incrementField();
-  void startRinging();
+  uint8_t nextDaysChoice(uint8_t days) const;
+  void startRinging(uint8_t index);
   void stopRinging();
   void checkAlarm();
+  void logAlarm(const char* prefix, uint8_t index, const AlarmSettings& settings) const;
 
   void render();
   void renderShowing();
@@ -55,8 +68,11 @@ private:
   Buzzer&       _buzzer;
   AlarmStore&   _store;
 
-  AlarmSettings _settings;  // saved values
-  AlarmSettings _draft;     // values being edited
+  AlarmList     _alarms;           // saved values
+  AlarmSettings _draft;            // values being edited
+  uint8_t       _shownIndex   = 0; // alarm on the Showing / Editing screen
+  uint8_t       _ringingIndex = 0; // alarm that is ringing
+  uint8_t       _customDays   = 0; // edited alarm's non-preset days, 0 if none
 
   Mode          _mode  = Mode::Idle;
   Field         _field = Field::Hour;

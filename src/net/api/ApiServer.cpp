@@ -1,7 +1,7 @@
 #include "ApiServer.h"
 
 ApiServer::ApiServer(DeviceAuth& auth, RtcClock& clock, DhtSensor& climate,
-                     const AlarmController& alarm, uint16_t port)
+                     AlarmController& alarm, uint16_t port)
   : _server(port),
     _router(_server),
     _requireToken(auth),

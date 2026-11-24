@@ -7,8 +7,10 @@
 #include "IMiddleware.h"
 
 // Maps method + path to a handler, running the route's middleware first.
+// "{name}" segments match any value; read them with request.param(0), param(1), ...
 //
 //   router.get("/api/state", Router::action(controller, &StateController::show), { &requireToken });
+//   router.put("/api/alarms/{id}", Router::action(controller, &AlarmsController::update));
 class Router {
 public:
   using Handler = std::function<void(HttpRequest&, HttpResponse&)>;
@@ -17,6 +19,7 @@ public:
 
   void get (const char* path, Handler handler, std::initializer_list<IMiddleware*> middleware = {});
   void post(const char* path, Handler handler, std::initializer_list<IMiddleware*> middleware = {});
+  void put (const char* path, Handler handler, std::initializer_list<IMiddleware*> middleware = {});
   void fallback(Handler handler);  // no route matched
 
   // Turns a controller method into a handler: Router::action(controller, &Controller::method).

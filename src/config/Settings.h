@@ -9,6 +9,7 @@ namespace Settings {
   constexpr unsigned long MESSAGE_TIME_MS     = 1500;              // boot / error messages
 
   // Alarm
+  constexpr uint8_t       ALARM_COUNT         = 5;                 // alarms kept in flash
   constexpr uint16_t      ALARM_TRACK         = 1;                 // 0001.mp3
   constexpr uint8_t       ALARM_VOLUME        = 20;                // 0..30
   constexpr unsigned long RING_MAX_MS         = 10UL * 60 * 1000;  // auto-stop after 10 min

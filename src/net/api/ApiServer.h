@@ -19,7 +19,7 @@
 class ApiServer : public IComponent {
 public:
   ApiServer(DeviceAuth& auth, RtcClock& clock, DhtSensor& climate,
-            const AlarmController& alarm, uint16_t port);
+            AlarmController& alarm, uint16_t port);
 
   bool begin() override;
   const char* name() const override { return "API"; }
