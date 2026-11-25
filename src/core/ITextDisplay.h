@@ -10,4 +10,6 @@ public:
   virtual void clear() = 0;
   // Writes text on a row, padding/truncating to the display width.
   virtual void printLine(uint8_t row, const char* text) = 0;
+  // Backlight level 0 ... 100 %. Displays without dimming may round it.
+  virtual void setBrightness(uint8_t percent) {}
 };

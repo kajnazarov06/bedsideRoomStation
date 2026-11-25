@@ -21,6 +21,11 @@ void LcdDisplay::clear() {
   _lcd.clear();
 }
 
+void LcdDisplay::setBrightness(uint8_t percent) {
+  if (percent == 0) _lcd.noBacklight();
+  else              _lcd.backlight();
+}
+
 void LcdDisplay::printLine(uint8_t row, const char* text) {
   if (row >= _rows) return;
   _lcd.setCursor(0, row);

@@ -14,6 +14,8 @@ public:
   uint8_t rows() const override { return _rows; }
   void clear() override;
   void printLine(uint8_t row, const char* text) override;
+  // The I2C backpack can only switch the backlight: 0 = off, anything else = on.
+  void setBrightness(uint8_t percent) override;
 
 private:
   uint8_t _sdaPin;

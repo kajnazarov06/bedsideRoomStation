@@ -1,7 +1,6 @@
 #include "StateController.h"
 #include <WiFi.h>
 #include "../resources/DateTimeFormat.h"
-#include "../../../config/Settings.h"
 
 void StateController::show(HttpRequest&, HttpResponse& response) {
   JsonDocument body;
@@ -9,7 +8,7 @@ void StateController::show(HttpRequest&, HttpResponse& response) {
   const RtcDateTime now = _clock.now();
   if (now.IsValid()) body["time"] = DateTimeFormat::iso(now);
   else               body["time"] = nullptr;
-  body["tz"] = Settings::TIME_ZONE;
+  body["tz"] = _settings.settings().timeZone;
 
   const ClimateReading reading = _climate.read();  // the DHT library caches reads for 2 s
   if (reading.valid) {

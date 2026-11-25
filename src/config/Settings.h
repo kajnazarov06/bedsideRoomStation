@@ -14,10 +14,15 @@ namespace Settings {
   constexpr uint8_t       ALARM_VOLUME        = 20;                // 0..30
   constexpr unsigned long RING_MAX_MS         = 10UL * 60 * 1000;  // auto-stop after 10 min
 
-  // Network API
+  // Device settings: defaults only, the live values are edited through
+  // PUT /api/settings and saved in flash (SettingsStore)
   constexpr const char*   DEVICE_NAME         = "Bedroom clock";   // shown in the app
+  constexpr const char*   TIME_ZONE           = "local";           // RTC holds local wall time
+  constexpr uint8_t       BRIGHTNESS          = 100;               // LCD backlight, 0..100 %
+  constexpr uint8_t       SNOOZE_MINUTES      = 5;                 // 1..60
+
+  // Network API
   constexpr const char*   DEVICE_TYPE         = "clock";           // API / mDNS device type
   constexpr const char*   FIRMWARE_VERSION    = "0.1.0";
-  constexpr const char*   TIME_ZONE           = "local";           // RTC holds local wall time
   constexpr uint16_t      API_PORT            = 80;
 }

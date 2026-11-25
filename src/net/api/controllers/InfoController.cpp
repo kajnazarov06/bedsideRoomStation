@@ -7,7 +7,7 @@ void InfoController::show(HttpRequest&, HttpResponse& response) {
   JsonDocument body;
   body["id"]     = DeviceIdentity::id();
   body["type"]   = Settings::DEVICE_TYPE;
-  body["name"]   = Settings::DEVICE_NAME;
+  body["name"]   = _settings.settings().name;
   body["fw"]     = Settings::FIRMWARE_VERSION;
   body["mac"]    = WiFi.macAddress();
   body["paired"] = _auth.isPaired();

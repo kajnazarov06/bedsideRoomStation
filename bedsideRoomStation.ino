@@ -12,6 +12,7 @@
 #include "src/drivers/Mp3Player.h"
 #include "src/drivers/Button.h"
 #include "src/storage/AlarmStore.h"
+#include "src/storage/SettingsStore.h"
 #include "src/ui/DashboardView.h"
 #include "src/ui/PairingView.h"
 #include "src/app/AlarmController.h"
@@ -23,6 +24,7 @@ Buzzer     buzzer(Pins::BUZZER);
 Mp3Player  mp3(Serial2, Pins::DFPLAYER_RX, Pins::DFPLAYER_TX);
 Button     setButton(Pins::BUTTON_SET);  // hold time: 1.5 s
 AlarmStore alarmStore;
+SettingsStore settingsStore;
 WifiConnection wifi(Secrets::WIFI_SSID, Secrets::WIFI_PASSWORD);
 
 DashboardView   dashboard(lcd, rtc, dht);
@@ -30,10 +32,10 @@ AlarmController alarmController(lcd, rtc, mp3, buzzer, alarmStore);
 
 DeviceAuth  deviceAuth;
 PairingView pairingView(lcd, deviceAuth);
-ApiServer  api(deviceAuth, rtc, dht, alarmController, Settings::API_PORT);
+ApiServer  api(deviceAuth, rtc, dht, alarmController, settingsStore, lcd, Settings::API_PORT);
 Discovery  discovery(Settings::API_PORT);
 
-IComponent* components[] = { &dht, &rtc, &buzzer, &mp3, &setButton, &alarmStore, &deviceAuth };
+IComponent* components[] = { &dht, &rtc, &buzzer, &mp3, &setButton, &alarmStore, &settingsStore, &deviceAuth };
 IComponent* netComponents[] = { &api, &discovery };  // started after WiFi
 
 void showMessage(const char* top, const char* bottom) {
@@ -51,6 +53,8 @@ void initComponents() {
     Serial.printf("[INIT] %-8s %s\n", component->name(), ok ? "OK" : "FAILED");
     if (!ok) showMessage(component->name(), "FAILED");
   }
+
+  lcd.setBrightness(settingsStore.settings().brightness);
 }
 
 void initWifi() {
