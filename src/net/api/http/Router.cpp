@@ -2,6 +2,21 @@
 #include <vector>
 #include <uri/UriBraces.h>
 
+namespace {
+  // "/api/alarms/{id}" -> "/api/alarms/{}". The ESP32 UriBraces matcher only
+  // understands empty braces; named ones never match.
+  String bracePattern(const char* path) {
+    String pattern;
+    bool insideBraces = false;
+    for (const char* character = path; *character != '\0'; character++) {
+      if (*character == '{')      { insideBraces = true;  pattern += "{}"; }
+      else if (*character == '}') { insideBraces = false; }
+      else if (!insideBraces)     { pattern += *character; }
+    }
+    return pattern;
+  }
+}
+
 void Router::get(const char* path, Handler handler, std::initializer_list<IMiddleware*> middleware) {
   add(HTTP_GET, path, handler, middleware);
 }
@@ -34,6 +49,6 @@ void Router::add(HTTPMethod method, const char* path, Handler handler,
     handler(request, response);
   };
 
-  if (strchr(path, '{')) _server.on(UriBraces(path), method, route);
+  if (strchr(path, '{')) _server.on(UriBraces(bracePattern(path)), method, route);
   else                   _server.on(path, method, route);
 }
